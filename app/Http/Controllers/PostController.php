@@ -40,14 +40,6 @@ class PostController extends Controller
         ]);
     }
 
-    public function edit(int $id): JsonResponse
-    {
-        $post = Post::findOrFail($id);
-        return response()->json([
-            'title' => $post->title,
-            'author' => $post->author,
-        ]);
-    }
 
     public function update(StorePostRequest $request, int $id): JsonResponse
     {
