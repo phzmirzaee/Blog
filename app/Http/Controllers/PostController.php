@@ -22,7 +22,7 @@ class PostController extends Controller
         ]);
     }
 
-// showAll
+
     public function index(): JsonResponse
     {
         $posts = Post::all();
