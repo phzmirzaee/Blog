@@ -10,4 +10,10 @@ class Post extends Model
     use HasFactory;
     protected $fillable = ['title','author'];
     public $timestamps = false;
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }
+
