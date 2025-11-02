@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Post extends Model
 {
     use HasFactory;
-    protected $fillable = ['title','author'];
+    protected $fillable = ['title','author','user_id'];
     public $timestamps = false;
 
     public function user(): BelongsTo

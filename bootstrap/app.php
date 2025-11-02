@@ -1,8 +1,11 @@
 <?php
 
+use App\Http\Middleware\JwtMiddleware;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use PHPOpenSourceSaver\JWTAuth\Http\Middleware\Authenticate as JWTAuthenticate;
+use PHPOpenSourceSaver\JWTAuth\Http\Middleware\Verify as JWTVerify;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -11,8 +14,11 @@ return Application::configure(basePath: dirname(__DIR__))
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
     )
-    ->withMiddleware(function (Middleware $middleware): void {
-        //
+    ->withMiddleware(function ($middleware) {
+        $middleware->alias([
+            'jwt.auth' => JWTAuthenticate::class,
+            'jwt.verify' => JWTVerify::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

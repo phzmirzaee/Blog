@@ -15,6 +15,7 @@ return new class extends Migration
             $table->string('lastName')->nullable();
             $table->string('image')->nullable();
             $table->string('role')->default('user');
+            $table->dropTimestamps();
         });
     }
 
