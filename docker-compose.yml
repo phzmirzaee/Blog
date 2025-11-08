@@ -7,7 +7,7 @@ services:
       dockerfile: Dockerfile
     container_name: Blog
     ports:
-      - "9000:80"
+      - "7020:80"
     volumes:
       - .:/var/www
     depends_on:
@@ -42,7 +42,7 @@ services:
       PMA_USER: root
       PMA_PASSWORD: root
     ports:
-      - "9030:80"
+      - "7030:80"
     networks:
       - laravel
 

@@ -2,41 +2,44 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\UserResource;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use App\Models\User;
 
 class AuthController extends Controller
 {
-    public function register(Request $request): JsonResponse
+    public function register(Request $request):UserResource
     {
         $request->validate([
-            'name' => 'required|string|max:255',
+            'name' => 'required|string|min:3|max:50|regex:/^[a-zA-Z\s]+$/u',
             'email' => 'required|email|unique:users',
-            'password' => 'required',
-            'lastName' => 'nullable|string|max:255',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg',
+            'password' => 'required|min:8|regex:/[A-Z]/|regex:/[a-z]/|regex:/[0-9]/|regex:/[@$!%*#?&]/',
+            'lastName' => 'nullable|string|min:3|max:50|regex:/^[a-zA-Z\s]+$/u',
+            'image' => 'nullable|file|mimes:jpeg,png,jpg,gif,svg',
         ]);
+        $imagePath=null;
+        if ($request->hasFile('image')) {
+            $imagePath = $request->file('image')->store('images', 'public');
+        }
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'lastName'=>$request->lastName,
-            'image'=>$request->image,
+            'image'=>$imagePath,
         ]);
         $token = JWTAuth::fromUser($user);
-        return response()->json([
-            'status' => 'success',
-            'message' => 'ثبت ‌نام با موفقیت انجام شد.',
-            'user' => $user,
-            'token' => $token
 
+        return (new UserResource($user))->additional([
+            'message'=>'ثبت نام با موفقیت انجام شد'
         ]);
     }
 
-    public function login(Request $request): JsonResponse
+    public function login(Request $request): UserResource
     {
         $credentials = $request->only('email', 'password');
         if (!$token = JWTAuth::attempt($credentials)) {
@@ -47,12 +50,8 @@ class AuthController extends Controller
             $user->role = 'admin';
             $user->save();
         }
-
-        return response()->json([
-            'status' => 'success',
-            'message' => 'ورود موفقیت‌آمیز بود.',
-            'token' => $token,
-            'user' => auth()->user()
+        return (new UserResource($user))->additional([
+            'message'=>'ورود موفقیت امیز بود',
         ]);
     }
     public function logout(): JsonResponse

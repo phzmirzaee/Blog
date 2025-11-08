@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StorePostRequest;
+use App\Http\Resources\PostResource;
 use App\Models\Post;
 use Illuminate\Container\Attributes\Auth;
 use Illuminate\Http\Request;
@@ -10,7 +11,7 @@ use Illuminate\Http\JsonResponse;
 
 class PostController extends Controller
 {
-    public function store(StorePostRequest $request): JsonResponse
+    public function store(StorePostRequest $request): PostResource
     {
         $user=auth()->user();
         if ($user->role === 'user') {
@@ -23,9 +24,8 @@ class PostController extends Controller
             'author' => $validatedData['author'],
             'user_id'=>auth()->id(),
         ]);
-        return response()->json([
-            'message' => 'پست با موفقیت ساخته شد',
-            'post' => $post,
+        return (new PostResource($post))->additional([
+            'message'=>'پست با موفقیت ساخته شد'
         ]);
     }
 
