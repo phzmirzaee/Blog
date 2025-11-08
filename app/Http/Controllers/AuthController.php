@@ -39,7 +39,7 @@ class AuthController extends Controller
         ]);
     }
 
-    public function login(Request $request): UserResource
+    public function login(Request $request): UserResource | JsonResponse
     {
         $credentials = $request->only('email', 'password');
         if (!$token = JWTAuth::attempt($credentials)) {
