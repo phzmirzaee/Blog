@@ -3,12 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Http\Resources\UserResource;
-use App\Models\EmailVerification;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\URL;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use App\Models\User;
 
@@ -35,20 +35,26 @@ class AuthController extends Controller
             'image' => $imagePath,
         ]);
 
-        $token = JWTAuth::fromUser($user);
+        $signedUrl = URL::temporarySignedRoute(
+            'verify.email',
+            now()->addMinutes(15),
+            ['user' => $user->id]
+        );
 
-        EmailVerification::create([
-            'user_id' => $user->id,
-            'token' => $token,
-            'created_at' => now(),
-        ]);
-        Mail::raw("برای تایید ایمیل خود روی لینک زیر کلیک کنید: " . url("/api/verify-email?token={$token}"), function($message) use ($user) {
+        Mail::raw("
+         {$user->name} عزیز
+         {$user->email}
+        برای تأیید ایمیل فقط کافیه روی لینک زیر بزنید:
+
+        $signedUrl
+
+        این لینک فقط 15 دقیقه اعتبار دارد.
+    ", function ($message) use ($user) {
             $message->to($user->email)
-                ->subject('تایید ایمیل');
+                ->subject('تأیید ایمیل');
         });
         return (new UserResource($user))->additional([
             'message' => 'ثبت نام با موفقیت انجام شد لطفا ایمیل خود را تایید کنید',
-            'verify_token' => $token
         ]);
     }
 
