@@ -52,7 +52,8 @@ class AuthController extends Controller
         ]);
     }
 
-    public function login(Request $request): UserResource|JsonResponse
+    public function login(Request $request): UserResource | JsonResponse
+
     {
 
         $credentials = $request->only('email', 'password');
