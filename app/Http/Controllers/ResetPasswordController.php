@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Hash;
 
 class ResetPasswordController extends Controller
 {
-    public function resetPassword(Request $request):JsonResponse
+    public function resetPassword(Request $request): JsonResponse
     {
         $request->validate([
             'token' => 'required|string',
@@ -23,28 +23,29 @@ class ResetPasswordController extends Controller
         if (!$reset) {
             return response()->json([
                 'message' => 'ایمیل یا توکن اشتباه است',
-            ],404);
+            ], 404);
         }
-        if($reset->expired_at < now()) {
+        if ($reset->expired_at < now()) {
+            $reset->delete();
             return response()->json([
-                'message'=>'لینک منقضی شده است'
-            ],410);
+                'message' => 'لینک منقضی شده است'
+            ], 410);
         }
-        $user=User::where('email',$reset->email)->first();
-        if (Hash::check($request->password,$user->password)) {
+        $user = User::where('email', $reset->email)->first();
+        if (Hash::check($request->password, $user->password)) {
             return response()->json([
-                'message'=>'رمز جدید نباید با رمز قبلی یکسان باشد.'
-            ],422);
+                'message' => 'رمز جدید نباید با رمز قبلی یکسان باشد.'
+            ], 422);
         }
 
-        $user->password=Hash::make($request->password);
+        $user->password = Hash::make($request->password);
         $user->save();
         $rows = ForgotPassword::where('email', $request->email)
             ->where('token', $request->token)
             ->delete();
 
         return response()->json([
-            'message'=>'رمز با موفقیت تغییر کرد'
-        ],200);
+            'message' => 'رمز با موفقیت تغییر کرد'
+        ], 200);
     }
 }

@@ -23,14 +23,14 @@ class ForgotPasswordController extends Controller
             ], 422);
         }
         $token = bin2hex(random_bytes(32));
-        $expiresAt=now()->addMinutes(15);
+        $expiresAt = now()->addMinutes(15);
         ForgotPassword::create([
             'email' => $user->email,
             'token' => $token,
             'expired_at' => $expiresAt,
         ]);
 
-        $resetLink = "https://your-frontend.com/reset-password?token={$token}&email={$user->email}";
+        $resetLink = url("/reset-password?token={$token}&email={$user->email}");
 
         Mail::raw(
             "سلام\n\n" .
@@ -39,7 +39,7 @@ class ForgotPasswordController extends Controller
             "این لینک تا تاریخ زیر معتبر است:\n" .
             $expiresAt->toDateTimeString() . "\n\n" .
             "اگر این درخواست توسط شما انجام نشده است، این ایمیل را نادیده بگیرید.",
-            function($message) use ($user) {
+            function ($message) use ($user) {
                 $message->to($user->email)
                     ->subject('بازنشانی رمز عبور');
             }
