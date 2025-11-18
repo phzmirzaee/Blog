@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Resources\UserResource;
+use App\Models\EmailVerification;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -55,11 +56,13 @@ class AuthController extends Controller
         });
         return (new UserResource($user))->additional([
             'message' => 'ثبت نام با موفقیت انجام شد لطفا ایمیل خود را تایید کنید',
-        ]);
+
+             ]);
     }
 
  
     public function login(Request $request): UserResource | JsonResponse
+
     {
 
         $credentials = $request->only('email', 'password');

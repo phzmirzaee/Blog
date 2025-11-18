@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
+
 class VerifyController extends Controller
 {
     public function verifyEmail(Request $request, User $user): JsonResponse
