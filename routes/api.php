@@ -23,9 +23,11 @@ Route::middleware('jwt.auth')->group(function () {
 
     Route::get('posts/', [PostController::class, 'index'])->name('posts.index');
     Route::get('posts/{id}', [PostController::class, 'show'])->name('posts.show');
-    Route::get('/verify-email',[VerifyController::class,'verifyEmail'])->name('verify.email');
+
+    Route::get('/verify-email/{user}',[VerifyController::class,'verifyEmail'])->name('verify.email')->middleware('signed');
     Route::post('/forgot-password',[ForgotPasswordController::class,'forgotPassword'])->name('forgot.password');
     Route::post('/reset-password',[ResetPasswordController::class,'resetPassword'])->name('reset.password');
+
 
 
 

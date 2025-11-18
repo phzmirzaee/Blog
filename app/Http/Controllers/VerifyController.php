@@ -6,32 +6,18 @@ use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use App\Models\EmailVerification;
+
 
 class VerifyController extends Controller
 {
-    public function verifyEmail(Request $request):JsonResponse{
-        $request->validate([
-            'token' => 'required|string',
-        ]);
-        $verify=EmailVerification::where('token',$request->token)->first();
-        if(!$verify){
-            return response()->json([
-                'message'=>'توکن نامعتبر است',
-            ]);
+    public function verifyEmail(Request $request, User $user): JsonResponse
+    {
+        if ($user->email_verified_at) {
+            return response()->json(['message' => 'ایمیل قبلاً تایید شده است']);
         }
-        if(Carbon::parse($verify->created_at)->addMinutes(10)->isPast()){
-            return response()->json([
-                'message' => 'توکن منقضی شده است',
-            ]);
-        }
-
-        $user=User::findOrfail($verify->user_id);
-        $user->email_verified_at=Carbon::now();
+        $user->email_verified_at = now();
         $user->save();
-        $verify->delete();
-        return response()->json([
-            'message'=>'ایمیل تایید شد',
-        ]);
+        return response()->json(['message' => 'ایمیل شما با موفقیت تایید شد']);
+
     }
 }
