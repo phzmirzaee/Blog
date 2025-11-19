@@ -27,6 +27,7 @@ class User extends Authenticatable implements JWTSubject
         'image',
     ];
     use HasFactory;
+
     public $timestamps = false;
 
     /**
@@ -57,10 +58,12 @@ class User extends Authenticatable implements JWTSubject
         return $this->hasMany(Post::class);
     }
 
+
     public function getJWTIdentifier(): int
     {
         return $this->getKey();
     }
+
     public function getJWTCustomClaims(): array
     {
         return [];

