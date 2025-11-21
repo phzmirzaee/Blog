@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\VerifyController;
+use App\Http\Controllers\Admin\ProductsController;
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
@@ -17,16 +18,28 @@ Route::middleware('jwt.auth')->group(function () {
     });
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('me', [AuthController::class, 'me']);
-
-
+    Route::middleware('admin')->prefix('admin')->group(function () {
+        Route::prefix('products')->group(function () {
+            Route::post('', [ProductsController::class, 'store'])->name('products.store');
+            Route::put('{id}', [ProductsController::class, 'update'])->name('products.update');
+            Route::delete('{id}', [ProductsController::class, 'delete'])->name('products.delete');
+        });
+    });
 });
 
-    Route::get('posts/', [PostController::class, 'index'])->name('posts.index');
-    Route::get('posts/{id}', [PostController::class, 'show'])->name('posts.show');
+Route::get('/post/product/{id}', [ProductsController::class, 'show'])->name('products.show');
+Route::get('/post/product', [ProductsController::class, 'index'])->name('products.index');
 
-    Route::get('/verify-email/{user}',[VerifyController::class,'verifyEmail'])->name('verify.email')->middleware('signed');
-    Route::post('/forgot-password',[ForgotPasswordController::class,'forgotPassword'])->name('forgot.password');
-    Route::post('/reset-password',[ResetPasswordController::class,'resetPassword'])->name('reset.password');
+
+Route::get('posts/', [PostController::class, 'index'])->name('posts.index');
+Route::get('posts/{id}', [PostController::class, 'show'])->name('posts.show');
+
+Route::get('/verify-email/{user}', [VerifyController::class, 'verifyEmail'])->name('verify.email')->middleware('signed');
+Route::post('/forgot-password', [ForgotPasswordController::class, 'forgotPassword'])->name('forgot.password');
+Route::post('/reset-password', [ResetPasswordController::class, 'resetPassword'])->name('reset.password');
+
+
+
 
 
 
