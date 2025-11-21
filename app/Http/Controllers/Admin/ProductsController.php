@@ -44,12 +44,6 @@ class ProductsController extends Controller
             'image' => $imagePath,
         ]);
 
-        if (!$createdProduct) {
-            return response()->json([
-                'success' => false,
-                'message' => 'محصول ایجاد نشد.'
-            ], 500);
-        }
         return response()->json([
             'success' => true,
             'message' => 'محصول با موفقیت ایجاد شد.',
@@ -62,7 +56,7 @@ class ProductsController extends Controller
         $validated = $request->validated();
         $product = Product::findOrFail($productId);
 
-        $updatedProduct=$product->update([
+        $product->update([
             'name' => $validated['name'],
             'description' => $validated['description'],
             'price' => $validated['price'],
