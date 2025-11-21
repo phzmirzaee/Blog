@@ -31,7 +31,6 @@ class ProductsController extends Controller
     {
         $validated = $request->validated();
 
-        $imagePath = null;
         if ($request->hasFile('image')) {
             $imagePath = $request->file('image')->store('productsImage', 'public');
         }
