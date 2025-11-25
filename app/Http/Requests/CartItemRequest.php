@@ -22,11 +22,8 @@ class CartItemRequest extends FormRequest
     public function rules(): array
     {
         return [
-//            "user_id" => "required|integer",
             "product_id" => "required|integer",
             "quantity" => "required|integer|min:1",
-//            "price" => "required|integer|min:3",
-//            "total_price" => "required|integer|min:3",
         ];
     }
 }

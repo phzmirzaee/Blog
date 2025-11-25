@@ -20,7 +20,7 @@ class CartItemController extends Controller
 
     }
 
-    public function Store(CartItemRequest $request): JsonResponse
+    public function store(CartItemRequest $request): JsonResponse
     {
         $validated = $request->validated();
 
@@ -30,7 +30,21 @@ class CartItemController extends Controller
             ->where('product_id', $product->id)
             ->first();
 
-        $totalPrice = $product->price * $validated['quantity'];
+        if ($cartItem) {
+            $newQuantity = $cartItem->quantity + $validated['quantity'];
+        } else {
+            $newQuantity = $validated['quantity'];
+        }
+
+
+        if ($newQuantity > $product->quantity) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'محصول موجود نیست',
+            ], 422);
+        }
+
+        $totalPrice = $product->price * $newQuantity;
 
         if (!$cartItem) {
             $cartItem = CartItem::create([
@@ -48,22 +62,14 @@ class CartItemController extends Controller
             ], 201);
         }
 
-        $newQuantity = $cartItem->quantity + $validated['quantity'];
-
-        if ($newQuantity > $product->quantity) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'محصول موجود نیست',
-            ], 422);
-        }
-
         $cartItem->update([
             'quantity' => $newQuantity,
-            'total_price' => $newQuantity * $product->price,
+            'total_price' => $totalPrice,
         ]);
 
         return response()->json([
             'status' => 'success',
+            'message' => 'سبد خرید بروزرسانی شد.',
             'cartItem' => $cartItem,
         ]);
     }
