@@ -8,10 +8,13 @@ use App\Http\Controllers\PostController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\VerifyController;
 use App\Http\Controllers\Admin\ProductsController;
+use App\Http\Controllers\CartItemController;
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 Route::middleware('jwt.auth')->group(function () {
+    Route::get('/cartItem',[CartItemController::class, 'index'])->name('cart.index');
+    Route::post('/cartItem',[CartItemController::class, 'store'])->name('cart.store');
     Route::prefix('posts')->group(function () {
         Route::post('', [PostController::class, 'store'])->name('posts.store');
         Route::put('{id}', [PostController::class, 'update'])->name('posts.update');

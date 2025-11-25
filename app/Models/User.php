@@ -58,6 +58,11 @@ class User extends Authenticatable implements JWTSubject
         return $this->hasMany(Post::class);
     }
 
+    public function cartItems(): HasMany
+    {
+       return $this->hasMany(CartItem::class);
+    }
+
 
     public function getJWTIdentifier(): int
     {
