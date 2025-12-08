@@ -9,6 +9,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\VerifyController;
 use App\Http\Controllers\Admin\ProductsController;
 use App\Http\Controllers\CartItemController;
+use App\Http\Controllers\Admin\Discount\DiscountController;
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
@@ -27,6 +28,7 @@ Route::middleware('jwt.auth')->group(function () {
             Route::put('{id}', [ProductsController::class, 'update'])->name('products.update');
             Route::delete('{id}', [ProductsController::class, 'delete'])->name('products.delete');
         });
+        Route::post('/discount/setting',[DiscountController::class, 'configure'])->name('discount.setting');
     });
 });
 
@@ -40,10 +42,5 @@ Route::get('posts/{id}', [PostController::class, 'show'])->name('posts.show');
 Route::get('/verify-email/{user}', [VerifyController::class, 'verifyEmail'])->name('verify.email')->middleware('signed');
 Route::post('/forgot-password', [ForgotPasswordController::class, 'forgotPassword'])->name('forgot.password');
 Route::post('/reset-password', [ResetPasswordController::class, 'resetPassword'])->name('reset.password');
-
-
-
-
-
 
 

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\CartItemRequest;
 use App\Models\CartItem;
 use App\Models\Product;
+use App\Models\Setting;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -14,9 +15,40 @@ class CartItemController extends Controller
     public function index(): JsonResponse
     {
         $cartItems = auth()->user()->cartItems()->get();
-        return response()->json([
-            'cartItems' => $cartItems,
-        ]);
+        $items = [];
+        $cartSubTotal = 0;
+        foreach ($cartItems as $cartItem) {
+            $items[] = [
+                'product_id' => $cartItem->product_id,
+                'quantity' => $cartItem->quantity,
+                'total_price' => $cartItem->product->price * $cartItem->quantity,
+            ];
+            $cartSubTotal += $cartItem->product->price * $cartItem->quantity;
+        }
+        $isActiveSetting = Setting::where('key', 'basket_discount_is_active')->first();
+        $threshold = Setting::where('key', 'basket_discount_threshold')->first();
+        $value = Setting::where('key', 'basket_discount_value')->first();
+
+        $isDiscountApplied = false;
+        if ($isActiveSetting->value == "1") {
+            if ($cartSubTotal >= (int)$threshold->value) {
+                $total = $cartSubTotal - (int)$value->value;
+                $isDiscountApplied = true;
+            } else {
+                $total = $cartSubTotal;
+            }
+        } else {
+            $total = $cartSubTotal;
+        }
+        return response()->json(
+            [
+                "user_id" => auth()->id(),
+                "items" => $items,
+                "total_price" => $total,
+                "total_profit" => $isDiscountApplied ? (int)$value->value : 0,
+            ]
+
+        );
 
     }
 
@@ -44,15 +76,11 @@ class CartItemController extends Controller
             ], 422);
         }
 
-        $totalPrice = $product->price * $newQuantity;
-
         if (!$cartItem) {
             $cartItem = CartItem::create([
                 'user_id' => auth()->id(),
                 'product_id' => $product->id,
                 'quantity' => $validated['quantity'],
-                'price' => $product->price,
-                'total_price' => $totalPrice,
             ]);
 
             return response()->json([
@@ -64,7 +92,6 @@ class CartItemController extends Controller
 
         $cartItem->update([
             'quantity' => $newQuantity,
-            'total_price' => $totalPrice,
         ]);
 
         return response()->json([
@@ -72,6 +99,7 @@ class CartItemController extends Controller
             'message' => 'سبد خرید بروزرسانی شد.',
             'cartItem' => $cartItem,
         ]);
+
     }
 
 }
