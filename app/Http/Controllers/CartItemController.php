@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\CartItemRequest;
 use App\Models\CartItem;
 use App\Models\Product;
+use App\Models\ProductDiscount;
 use App\Models\Setting;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -18,12 +19,26 @@ class CartItemController extends Controller
         $items = [];
         $cartSubTotal = 0;
         foreach ($cartItems as $cartItem) {
+            $productPrice = $cartItem->product->price;
+            $ProductDiscount = ProductDiscount::where('product_id', $cartItem->product_id)
+                ->where('is_active', 1)
+                ->where('start_date', '<=', now())
+                ->where('end_date', '>=', now())
+                ->first();
+            if ($ProductDiscount) {
+                if ($ProductDiscount->discount_type == 'percent') {
+                    $productPrice -= ($productPrice * $ProductDiscount->value) / 100;
+                } else {
+                    $productPrice -= $ProductDiscount->value;
+                }
+            }
+            $productPrice = max(0, $productPrice);
             $items[] = [
                 'product_id' => $cartItem->product_id,
                 'quantity' => $cartItem->quantity,
-                'total_price' => $cartItem->product->price * $cartItem->quantity,
+                'total_price' => $productPrice * $cartItem->quantity,
             ];
-            $cartSubTotal += $cartItem->product->price * $cartItem->quantity;
+            $cartSubTotal += $productPrice * $cartItem->quantity;
         }
         $isActiveSetting = Setting::where('key', 'basket_discount_is_active')->first();
         $threshold = Setting::where('key', 'basket_discount_threshold')->first();

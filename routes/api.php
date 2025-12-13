@@ -10,6 +10,7 @@ use App\Http\Controllers\VerifyController;
 use App\Http\Controllers\Admin\ProductsController;
 use App\Http\Controllers\CartItemController;
 use App\Http\Controllers\Admin\Discount\DiscountController;
+use App\Http\Controllers\Admin\Discount\ProductsDiscountController;
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
@@ -28,7 +29,10 @@ Route::middleware('jwt.auth')->group(function () {
             Route::put('{id}', [ProductsController::class, 'update'])->name('products.update');
             Route::delete('{id}', [ProductsController::class, 'delete'])->name('products.delete');
         });
-        Route::post('/discount/setting',[DiscountController::class, 'configure'])->name('discount.setting');
+        Route::prefix('discounts')->group(function () {
+            Route::post('/setting',[DiscountController::class, 'configure'])->name('discount.setting');
+            Route::post('/product',[ProductsDiscountController::class, 'configure'])->name('products.discount.store');
+        });
     });
 });
 
