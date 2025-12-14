@@ -38,7 +38,7 @@ class AuthController extends Controller
 
         $signedUrl = URL::temporarySignedRoute(
             'verify.email',
-            now()->addMinutes(15),
+            now()->addHours(72),
             ['user' => $user->id]
         );
 
@@ -49,7 +49,7 @@ class AuthController extends Controller
 
         $signedUrl
 
-        این لینک فقط 15 دقیقه اعتبار دارد.
+        این لینک فقط 72 ساعت اعتبار دارد.
     ", function ($message) use ($user) {
             $message->to($user->email)
                 ->subject('تأیید ایمیل');

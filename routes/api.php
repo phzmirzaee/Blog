@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\Discount\CouponsController;
 use App\Http\Controllers\ForgotPasswordController;
 use App\Http\Controllers\ResetPasswordController;
 use Illuminate\Http\Request;
@@ -32,6 +33,7 @@ Route::middleware('jwt.auth')->group(function () {
         Route::prefix('discounts')->group(function () {
             Route::post('/setting',[DiscountController::class, 'configure'])->name('discount.setting');
             Route::post('/product',[ProductsDiscountController::class, 'configure'])->name('products.discount.store');
+            Route::post('/coupons',[CouponsController::class, 'configure'])->name('coupons.store');
         });
     });
 });
