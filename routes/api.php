@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\Discount\CouponsController;
+use App\Http\Controllers\CartController;
 use App\Http\Controllers\ForgotPasswordController;
 use App\Http\Controllers\ResetPasswordController;
 use Illuminate\Http\Request;
@@ -18,6 +19,10 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::middleware('jwt.auth')->group(function () {
     Route::get('/cartItem',[CartItemController::class, 'index'])->name('cart.index');
     Route::post('/cartItem',[CartItemController::class, 'store'])->name('cart.store');
+    Route::get('/cart',[CartController::class, 'getCart'])->name('getCart');
+    Route::post('/cart',[CartController::class, 'addProductToCart'])->name('addProductToCart');
+    Route::delete('/cart/{id}',[CartController::class, 'removeProductFromCart'])->name('removeProductFromCart');
+    Route::post('/cart/coupon',[CartController::class, 'applyCoupon'])->name('applyCoupon');
     Route::prefix('posts')->group(function () {
         Route::post('', [PostController::class, 'store'])->name('posts.store');
         Route::put('{id}', [PostController::class, 'update'])->name('posts.update');

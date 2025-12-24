@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\Products\StoreProductRequest;
 use App\Http\Requests\Admin\Products\UpdateProductRequest;
 use App\Models\Product;
+use App\Models\ProductDiscount;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 
@@ -14,10 +15,36 @@ class ProductsController extends Controller
     public function index(): JsonResponse
     {
         $products = Product::all();
-        return response()->json([
-            "products" => $products
-        ]);
+        $product = Product::find(7);
+        $productPrice = $product->price;
+        $originalPrice = $productPrice;
+
+        $productDiscount = ProductDiscount::where('product_id', $product->id)
+            ->where('is_active', 1)
+            ->where('start_date', '<=', now())
+            ->where('end_date', '>=', now())
+            ->first();
+
+        if ($productDiscount) {
+            if ($productDiscount->discount_type == 'percent') {
+                $productPrice -= ($productPrice * $productDiscount->value) / 100;
+            } else {
+                $productPrice -= $productDiscount->value;
+                $productPrice = max(0, $productPrice);
+            }
+            Product::where('id', $product->id)->update([
+                'price' => $productPrice,
+            ]);
+        }
+
+            return response()->json([
+                "products" => $product,
+            ]);
+
+
+
     }
+
 
     public function show(int $productId): JsonResponse
     {
@@ -34,6 +61,7 @@ class ProductsController extends Controller
         $imagePath = $request->file('image')->store('productsImage', 'public');
 
         $createdProduct = Product::create([
+            //user_id
             'name' => $validated['name'],
             'description' => $validated['description'],
             'price' => $validated['price'],
