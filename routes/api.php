@@ -2,14 +2,15 @@
 
 use App\Http\Controllers\Admin\Discount\CouponsController;
 use App\Http\Controllers\Admin\Discount\GlobalCartDiscountController;
+use App\Http\Controllers\Admin\ShippingController;
+use App\Http\Controllers\ForgotPasswordController;
+use App\Http\Controllers\ResetPasswordController;
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\PostController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CartController;
-use App\Http\Controllers\ForgotPasswordController;
-use App\Http\Controllers\PostController;
 use App\Http\Controllers\ProductsController;
-use App\Http\Controllers\ResetPasswordController;
 use App\Http\Controllers\VerifyController;
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\ProductsController as AdminProductsController;
 
 Route::post('/register', [AuthController::class, 'register']);
@@ -38,6 +39,7 @@ Route::middleware('jwt.auth')->group(function () {
             Route::post('/setting', [GlobalCartDiscountController::class, 'configure'])->name('discounts.cart');
             Route::post('/coupons', [CouponsController::class, 'addCoupon'])->name('discounts.couponsStore');
         });
+        Route::post('/shipping',[ShippingController::class, 'configure'])->name('shipping.setting');
     });
 });
 
