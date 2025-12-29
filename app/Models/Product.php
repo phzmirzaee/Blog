@@ -16,5 +16,10 @@ class Product extends Model
         'quantity',
         'price',
         'image',
+        'discount_type',
+        'is_active_discount',
+        'discount_value',
+        'start_date_discount',
+        'end_date_discount',
     ];
 }

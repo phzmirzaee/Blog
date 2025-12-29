@@ -3,14 +3,14 @@
 namespace App\Http\Controllers\Admin\Discount;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Admin\CouponsRequest;
+use App\Http\Requests\Admin\AddCouponsRequest;
 use App\Models\Coupon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class CouponsController extends Controller
 {
-    public function configure(CouponsRequest $request): JsonResponse
+    public function addCoupon(AddCouponsRequest $request): JsonResponse
     {
         $validated = $request->validated();
         Coupon::updateOrCreate(
@@ -26,7 +26,7 @@ class CouponsController extends Controller
             ]
         );
         return response()->json([
-            'message' => 'کد تخفیف شماذخیره شد.',
+            'message' => 'کد تخفیف شمااضافه شد.',
         ],200);
     }
 }

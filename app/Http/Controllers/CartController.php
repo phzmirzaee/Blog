@@ -5,52 +5,94 @@ namespace App\Http\Controllers;
 use App\Http\Requests\AddProductToCartRequest;
 use App\Http\Requests\ApplyCouponRequest;
 use App\Models\Cart;
+use App\Models\CartItem;
 use App\Models\Coupon;
+use App\Models\Product;
 use App\Models\Setting;
 use Illuminate\Http\JsonResponse;
 
 class CartController extends Controller
 {
+    private function basketDiscountValue(): int
+    {
+        return (int)Setting::where('key', 'basket_discount_value')->value('value');
+    }
+
+    private function basketDiscountIsActive(): bool
+    {
+        return Setting::where('key', 'basket_discount_is_active')->value('value') === "1";
+    }
+
+    private function basketDiscountReachedThreshold(int $cartSubTotal): bool
+    {
+        $threshold = Setting::where('key', 'basket_discount_threshold')->value('value');
+        return $cartSubTotal >= (int)$threshold;
+    }
+
+    private function calculateBasketDiscount(int $cartSubTotal): int
+    {
+        if (!$this->basketDiscountIsActive()) {
+            return 0;
+        }
+        if (!$this->basketDiscountReachedThreshold($cartSubTotal)) {
+            return 0;
+        }
+        return $this->basketDiscountValue();
+    }
+
     public function getCart(): JsonResponse
     {
+        $discountedProductPrice = 0;
         $cartSubTotal = 0;
-        $totalProfit = 0;
         $couponDiscountAmount = 0;
+        $totalProductDiscount = 0;
+        $cartItemsData = [];
+
         $cart = auth()->user()->cart;
         if (!$cart || $cart->items->isEmpty()) {
             return response()->json(['message' => 'سبد خرید خالی است'], 422);
         }
+
         $cartItems = $cart->items;
         foreach ($cartItems as $cartItem) {
-            $cartSubTotal += $cartItem->product->price * $cartItem->quantity;
+            $productPrice = $cartItem->product->price;
+            $discountedProductPrice = $productPrice;
+            $product = $cartItem->product;
+            $discountAmount = 0;
+            if ($product->is_active_discount == 1) {
+                if ($product->discount_type == 'percent') {
+                    $discountAmount = floor(($productPrice * $product->discount_value) / 100);
+                } else {
+                    $discountAmount = min($product->discount_value, $productPrice);
+                }
+                $discountedProductPrice-= $discountAmount;
+                $totalProductDiscount += $discountAmount * $cartItem->quantity;
+            }
+            $cartSubTotal += $discountedProductPrice * $cartItem->quantity;
+            $cartItemsData[] = [
+                'product_id' => $cartItem->product_id,
+                'quantity' => $cartItem->quantity,
+                'price' => $discountedProductPrice,
+            ];
         }
         $coupon = Coupon::find($cart->coupon_id);
         if ($coupon) {
             if ($coupon->discount_type == 'percent') {
-                $couponDiscountAmount = ($cartSubTotal * $coupon->value) / 100;
+                $couponDiscountAmount = floor(($cartSubTotal * $coupon->value) / 100);
             } else {
                 $couponDiscountAmount = $coupon->value;
                 $couponDiscountAmount = min($couponDiscountAmount, $cartSubTotal);
             }
+        } else {
+            $basketDiscount = $this->calculateBasketDiscount($cartSubTotal);
+            $couponDiscountAmount = $basketDiscount;
         }
 
-        $isActiveSetting = Setting::where('key', 'basket_discount_is_active')->first();
-        $threshold = Setting::where('key', 'basket_discount_threshold')->first();
-        $value = Setting::where('key', 'basket_discount_value')->first();
-        $total = 0;
-        if ($isActiveSetting && $isActiveSetting->value == "1") {
-            if ($cartSubTotal >= (int)$threshold->value) {
-                $total -= (int)$value->value;
-                $couponDiscountAmount += (int)$value->value;
-            }
-        }
-
+        $totalProfit = $totalProductDiscount + $couponDiscountAmount;
         $total = $cartSubTotal - $couponDiscountAmount;
-        $totalProfit += $couponDiscountAmount;
 
         return response()->json([
-            'product_id'=>$cartItem->product_id,
-            'quantity'=>$cartItem->quantity,
+            'items' => $cartItemsData,
             'total_price' => $total,
             'total_profit' => $totalProfit,
             'coupon_code' => $coupon?->code,

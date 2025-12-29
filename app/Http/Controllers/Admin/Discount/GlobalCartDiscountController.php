@@ -3,14 +3,14 @@
 namespace App\Http\Controllers\Admin\Discount;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Admin\SettingRequest;
+use App\Http\Requests\Admin\ConfigureGlobalCartDicsountRequest;
 use App\Models\Setting;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
-class DiscountController extends Controller
+class GlobalCartDiscountController extends Controller
 {
-    public function configure(SettingRequest $request):JsonResponse
+    public function configure(ConfigureGlobalCartDicsountRequest $request):JsonResponse
     {
         $validated= $request->validated();
 
@@ -35,7 +35,7 @@ class DiscountController extends Controller
             ['value' => $validated['threshold']],
         );
         return response()->json([
-            'message'=>'تنظیمات تخفیف با موفقیت ذخیره شد',
+            'message'=>' تخفیف با موفقیت تنظیم شد',
         ],200);
     }
 }

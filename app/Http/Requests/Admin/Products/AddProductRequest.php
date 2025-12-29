@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Requests\Admin;
+namespace App\Http\Requests\Admin\Products;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class ProductsDiscountRequest extends FormRequest
+class AddProductRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -22,14 +22,11 @@ class ProductsDiscountRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'product_id' => 'required|integer',
-            'discount_type' => 'required|in:fixed,percent',
-            'is_active'=>'required|boolean',
-            'value'=>'required|numeric|min:1',
-            'start_date'=>'required|date',
-            'end_date'=>'required|date|after_or_equal:start_date',
-
-
+            "name" => "required|string|min:3|max:50|regex:/^[a-zA-Z\s]+$/u",
+            "description" => "required|string|min:10",
+            "quantity" => "required|integer|min:1",
+            "price" => "required|integer|min:3",
+            "image" => "required|image|mimes:jpeg,png,jpg,gif,svg",
         ];
     }
 }
