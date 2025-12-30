@@ -2,9 +2,10 @@
 
 namespace App\Http\Requests\Admin;
 
+use App\Models\Product;
 use Illuminate\Foundation\Http\FormRequest;
 
-class StoreProductDiscountRequest extends FormRequest
+class AddProductDiscountRequest extends FormRequest
 {
 
     public function authorize(): bool
@@ -27,6 +28,12 @@ class StoreProductDiscountRequest extends FormRequest
                     }
                     if ($this->discount_type == 'percent' && $value > 90) {
                         $fail('مقدار تخفیف درصدی نمی‌تواند بیشتر از 90٪ باشد.');
+                    }
+                    if($this->discount_type=='fixed'){
+                        $product=Product::findOrFail($this->id);
+                        if($product&&$value>$product->price) {
+                            $fail('مقدار تخفیف نمی تواند بیشتر از قیمت محصول باشد.');
+                        }
                     }
                 }
             ],

@@ -13,31 +13,31 @@ use Illuminate\Http\JsonResponse;
 
 class CartController extends Controller
 {
-    private function basketDiscountValue(): int
+    private function cartDiscountValue(): int
     {
-        return (int)Setting::where('key', 'basket_discount_value')->value('value');
+        return (int)Setting::where('key', 'cart_discount_value')->value('value');
     }
 
-    private function basketDiscountIsActive(): bool
+    private function cartDiscountIsActive(): bool
     {
-        return Setting::where('key', 'basket_discount_is_active')->value('value') === "1";
+        return Setting::where('key', 'cart_discount_is_active')->value('value') === "1";
     }
 
-    private function basketDiscountReachedThreshold(int $cartSubTotal): bool
+    private function cartDiscountReachedThreshold(int $cartSubTotal): bool
     {
-        $threshold = Setting::where('key', 'basket_discount_threshold')->value('value');
+        $threshold = Setting::where('key', 'cart_discount_threshold')->value('value');
         return $cartSubTotal >= (int)$threshold;
     }
 
-    private function calculateBasketDiscount(int $cartSubTotal): int
+    private function calculateCartDiscount(int $cartSubTotal): int
     {
-        if (!$this->basketDiscountIsActive()) {
+        if (!$this->cartDiscountIsActive()) {
             return 0;
         }
-        if (!$this->basketDiscountReachedThreshold($cartSubTotal)) {
+        if (!$this->cartDiscountReachedThreshold($cartSubTotal)) {
             return 0;
         }
-        return $this->basketDiscountValue();
+        return $this->cartDiscountValue();
     }
 
     public function getCart(): JsonResponse
@@ -60,7 +60,7 @@ class CartController extends Controller
                 if ($product->discount_type == 'percent') {
                     $discountAmount = floor(($productPrice * $product->discount_value) / 100);
                 } else {
-                    $discountAmount = min($product->discount_value, $productPrice);
+                    $discountAmount =$product->discount_value;
                 }
                 $discountedUnitPrice -= $discountAmount;
                 $totalProductDiscount += $discountAmount * $cartItem->quantity;
@@ -81,8 +81,8 @@ class CartController extends Controller
                 $couponDiscountAmount = min($couponDiscountAmount, $cartSubTotal);
             }
         } else {
-            $basketDiscount = $this->calculateBasketDiscount($cartSubTotal);
-            $couponDiscountAmount = $basketDiscount;
+            $cartDiscount = $this->calculateCartDiscount($cartSubTotal);
+            $couponDiscountAmount = $cartDiscount;
         }
 
         $totalSavings = $totalProductDiscount + $couponDiscountAmount;

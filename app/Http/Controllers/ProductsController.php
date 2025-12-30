@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\Admin\Products\AddProductRequest;
 use App\Http\Requests\Admin\Products\UpdateProductRequest;
-use App\Http\Requests\Admin\StoreProductDiscountRequest;
+use App\Http\Requests\Admin\AddProductDiscountRequest;
 use App\Models\Product;
 use Illuminate\Http\JsonResponse;
 
@@ -22,7 +22,7 @@ class ProductsController extends Controller
             if ($product->discount_type == 'percent') {
                 $discountAmount = floor(( $originalPrice * $product->discount_value) / 100);
             } else {
-                $discountAmount = min($product->discount_value, $originalPrice);
+                $discountAmount =$product->discount_value;
             }
         }
         $finalPrice = $originalPrice - $discountAmount;

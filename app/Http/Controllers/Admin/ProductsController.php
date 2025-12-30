@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\Products\AddProductRequest;
 use App\Http\Requests\Admin\Products\UpdateProductRequest;
-use App\Http\Requests\Admin\StoreProductDiscountRequest;
+use App\Http\Requests\Admin\AddProductDiscountRequest;
 use App\Models\Product;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -77,7 +77,7 @@ class ProductsController extends Controller
         ]);
     }
 
-    public function addProductDiscount(StoreProductDiscountRequest $request, int $productId): JsonResponse
+    public function addProductDiscount(AddProductDiscountRequest $request, int $productId): JsonResponse
     {
         $validated = $request->validated();
         $product = Product::findOrFail($productId);

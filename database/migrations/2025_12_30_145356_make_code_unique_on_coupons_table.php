@@ -9,16 +9,15 @@ return new class extends Migration
 
     public function up(): void
     {
-        Schema::create('settings', function (Blueprint $table) {
-            $table->id();
-            $table->string('key');
-            $table->string('value');
+        Schema::table('coupons', function (Blueprint $table) {
+            $table->string('code')->unique()->change();
         });
     }
 
-
     public function down(): void
     {
-        Schema::dropIfExists('settings');
+        Schema::table('coupons', function (Blueprint $table) {
+            $table->dropUnique(['code']);
+        });
     }
 };
