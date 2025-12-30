@@ -20,7 +20,7 @@ class ConfigureGlobalCartDicsountRequest extends FormRequest
             'start_date' => 'required|date',
             'end_date' => 'required|date|after_or_equal:start_date',
             'is_active' => 'required|boolean',
-            'threshold' => 'required|integer',
+            'threshold' => 'required|integer|min:0',
         ];
     }
 }

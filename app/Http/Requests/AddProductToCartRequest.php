@@ -18,7 +18,6 @@ class AddProductToCartRequest extends FormRequest
         return [
             'product_id' => 'required|integer',
             'quantity' => 'required|integer',
-            'coupon_id' => 'nullable|integer',
         ];
     }
 }

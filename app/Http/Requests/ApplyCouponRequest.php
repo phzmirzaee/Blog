@@ -16,7 +16,7 @@ class ApplyCouponRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'code' => 'required|string|min:3|max:30|unique:coupons,code',
+            'code' => 'required|string|min:3|max:30',
         ];
     }
 }

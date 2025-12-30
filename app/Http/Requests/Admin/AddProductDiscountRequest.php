@@ -31,7 +31,7 @@ class AddProductDiscountRequest extends FormRequest
                     }
                     if($this->discount_type=='fixed'){
                         $product=Product::findOrFail($this->id);
-                        if($product&&$value>$product->price) {
+                        if($value>$product->price) {
                             $fail('مقدار تخفیف نمی تواند بیشتر از قیمت محصول باشد.');
                         }
                     }
