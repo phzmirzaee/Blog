@@ -12,11 +12,11 @@ use Illuminate\Http\Request;
 
 class ProductsController extends Controller
 {
-    public function getProducts(): JsonResponse
+    public function getAllProducts(): JsonResponse
     {
         $products = Product::all();
         return response()->json([
-            'Products' => $products,
+            'products' => $products,
         ]);
     }
 
@@ -27,6 +27,7 @@ class ProductsController extends Controller
             "product" => $product
         ]);
     }
+
     public function addProduct(AddProductRequest $request): JsonResponse
     {
         $validated = $request->validated();
@@ -47,6 +48,7 @@ class ProductsController extends Controller
             'product' => $createdProduct
         ]);
     }
+
     public function update(UpdateProductRequest $request, int $productId): JsonResponse
     {
         $validated = $request->validated();
@@ -65,6 +67,7 @@ class ProductsController extends Controller
             "product" => $product
         ]);
     }
+
     public function delete(int $productId): JsonResponse
     {
         $product = Product::findOrFail($productId);
@@ -73,21 +76,18 @@ class ProductsController extends Controller
             "message" => "محصول با موفقیت حذف شد."
         ]);
     }
+
     public function addProductDiscount(StoreProductDiscountRequest $request, int $productId): JsonResponse
     {
         $validated = $request->validated();
         $product = Product::findOrFail($productId);
-        Product::updateOrCreate(
-
-            ['id' => $product->id],
-            [
-                'discount_type' => $validated['discount_type'],
-                'is_active_discount' => $validated['is_active_discount'],
-                'discount_value' => $validated['discount_value'],
-                'start_date_discount' => $validated['start_date_discount'],
-                'end_date_discount' => $validated['end_date_discount'],
-            ]
-        );
+        $product->update([
+            'discount_type' => $validated['discount_type'],
+            'is_active_discount' => $validated['is_active_discount'],
+            'discount_value' => $validated['discount_value'],
+            'start_date_discount' => $validated['start_date_discount'],
+            'end_date_discount' => $validated['end_date_discount'],
+        ]);
         return response()->json([
             'message' => 'تخفیف محصولات با موفقیت تنظیم شد.',
         ]);

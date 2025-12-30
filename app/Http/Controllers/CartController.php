@@ -42,22 +42,19 @@ class CartController extends Controller
 
     public function getCart(): JsonResponse
     {
-        $discountedProductPrice = 0;
         $cartSubTotal = 0;
-        $couponDiscountAmount = 0;
         $totalProductDiscount = 0;
         $cartItemsData = [];
 
         $cart = auth()->user()->cart;
         if (!$cart || $cart->items->isEmpty()) {
-            return response()->json(['message' => 'سبد خرید خالی است'], 422);
+            return response()->json(['message' => 'سبد خرید خالی است']);
         }
 
-        $cartItems = $cart->items;
-        foreach ($cartItems as $cartItem) {
-            $productPrice = $cartItem->product->price;
-            $discountedProductPrice = $productPrice;
+        foreach ($cart->items as $cartItem) {
             $product = $cartItem->product;
+            $productPrice = $product->price;
+            $discountedUnitPrice = $productPrice;
             $discountAmount = 0;
             if ($product->is_active_discount == 1) {
                 if ($product->discount_type == 'percent') {
@@ -65,14 +62,14 @@ class CartController extends Controller
                 } else {
                     $discountAmount = min($product->discount_value, $productPrice);
                 }
-                $discountedProductPrice-= $discountAmount;
+                $discountedUnitPrice -= $discountAmount;
                 $totalProductDiscount += $discountAmount * $cartItem->quantity;
             }
-            $cartSubTotal += $discountedProductPrice * $cartItem->quantity;
+            $cartSubTotal += $discountedUnitPrice * $cartItem->quantity;
             $cartItemsData[] = [
                 'product_id' => $cartItem->product_id,
                 'quantity' => $cartItem->quantity,
-                'price' => $discountedProductPrice,
+                'price' => $discountedUnitPrice,
             ];
         }
         $coupon = Coupon::find($cart->coupon_id);
@@ -88,13 +85,13 @@ class CartController extends Controller
             $couponDiscountAmount = $basketDiscount;
         }
 
-        $totalProfit = $totalProductDiscount + $couponDiscountAmount;
+        $totalSavings = $totalProductDiscount + $couponDiscountAmount;
         $total = $cartSubTotal - $couponDiscountAmount;
 
         return response()->json([
             'items' => $cartItemsData,
             'total_price' => $total,
-            'total_profit' => $totalProfit,
+            'total_saving' => $totalSavings,
             'coupon_code' => $coupon?->code,
         ]);
     }

@@ -27,12 +27,12 @@ Route::middleware('jwt.auth')->group(function () {
     Route::get('me', [AuthController::class, 'me']);
     Route::middleware('admin')->prefix('admin')->group(function () {
         Route::prefix('products')->group(function () {
-            Route::get('/', [AdminProductsController::class, 'getProducts'])->name('admin.products.getProducts');
+            Route::get('/', [AdminProductsController::class, 'getAllProducts'])->name('admin.products.getProducts');
             Route::get('/getProduct/{id}', [AdminProductsController::class, 'getProduct'])->name('admin.products.getProduct');
             Route::post('', [AdminProductsController::class, 'addProduct'])->name('admin.products.add');
             Route::put('{id}', [AdminProductsController::class, 'update'])->name('admin.products.update');
             Route::delete('{id}', [AdminProductsController::class, 'delete'])->name('admin.products.delete');
-            Route::post('discount/{id}', [AdminProductsController::class, 'addProductDiscount'])->name('admin.products.discount.add');
+            Route::put('discount/{id}', [AdminProductsController::class, 'addProductDiscount'])->name('admin.products.discount.add');
         });
         Route::prefix('discounts')->group(function () {
             Route::post('/setting', [GlobalCartDiscountController::class, 'configure'])->name('discounts.cart');

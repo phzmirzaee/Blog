@@ -15,23 +15,23 @@ class GlobalCartDiscountController extends Controller
         $validated= $request->validated();
 
         Setting::updateOrCreate(
-            ['key' => 'basket_discount_value'],
+            ['key' => 'cart_discount_value'],
             ['value' => $validated['value']],
         );
         Setting::updateOrCreate(
-            ['key' => 'basket_discount_start_date'],
+            ['key' => 'cart_discount_start_date'],
             ['value' => $validated['start_date']],
         );
         Setting::updateOrCreate(
-            ['key' => 'basket_discount_end_date'],
+            ['key' => 'cart_discount_end_date'],
             ['value' => $validated['end_date']],
         );
         Setting::updateOrCreate(
-            ['key' => 'basket_discount_is_active'],
+            ['key' => 'cart_discount_is_active'],
             ['value' => $validated['is_active']],
         );
         Setting::updateOrCreate(
-            ['key' => 'basket_discount_threshold'],
+            ['key' => 'cart_discount_threshold'],
             ['value' => $validated['threshold']],
         );
         return response()->json([

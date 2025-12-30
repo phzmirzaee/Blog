@@ -38,7 +38,7 @@ class AuthController extends Controller
 
         $signedUrl = URL::temporarySignedRoute(
             'verify.email',
-            now()->addMinute(15),
+            now()->addMinutes(15),
             ['user' => $user->id]
         );
 

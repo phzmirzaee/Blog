@@ -10,34 +10,30 @@ use Illuminate\Http\JsonResponse;
 
 class ProductsController extends Controller
 {
-    private function productWithDiscount(Product $product): array
+    private function calculateProductDiscount(Product $product): array
     {
-        $productPrice = $product->price;
-        $productDiscount = Product::where('id', $product->id)
-            ->where('is_active_discount', 1)
-            ->where('start_date_discount', '<=', now())
-            ->where('end_date_discount', '>=', now())
-            ->first();
-        $discountedPrice = null;
-        $discountAmount = null;
-        if (isset($productDiscount)) {
-            if ($productDiscount->discount_type == 'percent') {
-                $discountAmount = ($productPrice * $productDiscount->discount_value) / 100;
+        $originalPrice = $product->price;
+        $discountAmount=0;
+        if (
+            $product->is_active_discount &&
+            $product->start_date_discount <= now() &&
+            $product->end_date_discount >= now()
+        ) {
+            if ($product->discount_type == 'percent') {
+                $discountAmount = floor(( $originalPrice * $product->discount_value) / 100);
             } else {
-                $discountAmount = $productDiscount->discount_value;
-                $discountAmount = max(0, $discountAmount);
+                $discountAmount = min($product->discount_value, $originalPrice);
             }
-            $discountedPrice = $productPrice - $discountAmount;
         }
-        $discountedPrice = $productPrice - $discountAmount;
+        $finalPrice = $originalPrice - $discountAmount;
         return [
             'name' => $product->name,
             'description' => $product->description,
-            'price' => $productPrice,
+            'originalPrice' => $originalPrice,
             'quantity' => $product->quantity,
             'image' => $product->image,
-            'amount' => $discountAmount,
-            'discountedPrice' => $discountedPrice,
+            'discount_amount' => $discountAmount,
+            'finalPrice' => $finalPrice,
         ];
     }
 
@@ -46,7 +42,7 @@ class ProductsController extends Controller
         $productsData = [];
         $products = Product::all();
         foreach ($products as $product) {
-            $productsData[] = $this->productWithDiscount($product);
+            $productsData[] = $this->calculateProductDiscount($product);
         }
         return response()->json([
             'Products' => $productsData,
@@ -57,7 +53,7 @@ class ProductsController extends Controller
     {
         $product = Product::findOrFail($productId);
         return response()->json([
-            "product" => $this->productWithDiscount($product),
+            "product" => $this->calculateProductDiscount($product),
         ]);
     }
     }

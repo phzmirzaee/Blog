@@ -22,13 +22,16 @@ class StoreProductDiscountRequest extends FormRequest
                 'required',
                 'numeric',
                 function ($attribute, $value, $fail) {
+                    if ($value <= 0) {
+                        $fail('مقدار تخفیف نمیتواند صفر یا منفی باشد.');
+                    }
                     if ($this->discount_type == 'percent' && $value > 90) {
                         $fail('مقدار تخفیف درصدی نمی‌تواند بیشتر از 90٪ باشد.');
                     }
                 }
             ],
             'start_date_discount' => 'required|date',
-            'end_date_discount' => 'required|date|after_or_equal:start_date',
+            'end_date_discount' => 'required|date|after_or_equal:start_date_discount',
         ];
     }
 }
