@@ -3,6 +3,7 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -58,9 +59,9 @@ class User extends Authenticatable implements JWTSubject
         return $this->hasMany(Post::class);
     }
 
-    public function cartItems(): HasMany
+    public function cart(): HasOne
     {
-       return $this->hasMany(CartItem::class);
+        return $this->hasOne(Cart::class);
     }
 
 

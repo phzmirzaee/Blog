@@ -1,0 +1,172 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Http\Requests\AddProductToCartRequest;
+use App\Http\Requests\ApplyCouponRequest;
+use App\Models\Cart;
+use App\Models\CartItem;
+use App\Models\Coupon;
+use App\Models\Product;
+use App\Models\Setting;
+use Illuminate\Http\JsonResponse;
+
+class CartController extends Controller
+{
+    private function cartDiscountValue(): int
+    {
+        return (int)Setting::where('key', 'cart_discount_value')->value('value');
+    }
+
+    private function cartDiscountIsActive(): bool
+    {
+        return Setting::where('key', 'cart_discount_is_active')->value('value') === "1";
+    }
+
+    private function cartDiscountReachedThreshold(int $cartSubTotal): bool
+    {
+        $threshold = Setting::where('key', 'cart_discount_threshold')->value('value');
+        return $cartSubTotal >= (int)$threshold;
+    }
+
+    private function calculateCartDiscount(int $cartSubTotal): int
+    {
+        if (!$this->cartDiscountIsActive()) {
+            return 0;
+        }
+        if (!$this->cartDiscountReachedThreshold($cartSubTotal)) {
+            return 0;
+        }
+        return $this->cartDiscountValue();
+    }
+
+    public function getCart(): JsonResponse
+    {
+        $cartSubTotal = 0;
+        $totalProductDiscount = 0;
+        $cartItemsData = [];
+
+        $cart = auth()->user()->cart;
+        if (!$cart || $cart->items->isEmpty()) {
+            return response()->json(['message' => 'سبد خرید خالی است']);
+        }
+
+        foreach ($cart->items as $cartItem) {
+            $product = $cartItem->product;
+            $productPrice = $product->price;
+            $discountedUnitPrice = $productPrice;
+            $discountAmount = 0;
+            if ($product->is_active_discount == 1) {
+                if ($product->discount_type == 'percent') {
+                    $discountAmount = floor(($productPrice * $product->discount_value) / 100);
+                } else {
+                    $discountAmount =$product->discount_value;
+                }
+                $discountedUnitPrice -= $discountAmount;
+                $totalProductDiscount += $discountAmount * $cartItem->quantity;
+            }
+            $cartSubTotal += $discountedUnitPrice * $cartItem->quantity;
+            $cartItemsData[] = [
+                'product_id' => $cartItem->product_id,
+                'quantity' => $cartItem->quantity,
+                'price' => $discountedUnitPrice,
+            ];
+        }
+        $coupon = Coupon::find($cart->coupon_id);
+        if ($coupon) {
+            if ($coupon->discount_type == 'percent') {
+                $couponDiscountAmount = floor(($cartSubTotal * $coupon->value) / 100);
+            } else {
+                $couponDiscountAmount = $coupon->value;
+                $couponDiscountAmount = min($couponDiscountAmount, $cartSubTotal);
+            }
+        } else {
+            $cartDiscount = $this->calculateCartDiscount($cartSubTotal);
+            $couponDiscountAmount = $cartDiscount;
+        }
+
+        $totalSavings = $totalProductDiscount + $couponDiscountAmount;
+        $total = $cartSubTotal - $couponDiscountAmount;
+
+        return response()->json([
+            'items' => $cartItemsData,
+            'total_price' => $total,
+            'total_saving' => $totalSavings,
+            'coupon_code' => $coupon?->code,
+        ]);
+    }
+
+    public function addProductToCart(AddProductToCartRequest $request): JsonResponse
+    {
+        $userId = auth()->id();
+        $validated = $request->validated();
+        $cart = Cart::query()->where('user_id', $userId)->first();
+        if (!$cart) {
+            $cart = Cart::create([
+                'user_id' => $userId,
+            ]);
+        }
+
+        $item = $cart->items()->where('product_id', $validated['product_id'])->first();
+        if ($item) {
+            $item->increment('quantity', $validated['quantity']);
+        } else {
+            $cart->items()->create([
+                'product_id' => $validated['product_id'],
+                'quantity' => $validated['quantity'],
+            ]);
+        }
+        return response()->json('محصول مورد نظر به سبد اضافه شد.');
+    }
+
+    public function removeProductFromCart(int $productId): JsonResponse
+    {
+        $cart = Cart::query()
+            ->where('user_id', auth()->id())
+            ->first();
+        $item = $cart->items()
+            ->where('product_id', $productId)
+            ->first();
+        if (!$item) {
+            return response()->json(['message' => 'محصول مورد نظر شما یافت نشد'], 404);
+        }
+        $item->delete();
+        return response()->json(['message' => 'محصول از سبد شما حذف شد.']);
+    }
+
+    public function applyCoupon(ApplyCouponRequest $request): JsonResponse
+    {
+        $validated = $request->validated();
+        $coupon = Coupon::where('code', $validated['code'])
+            ->where('is_active', true)
+            ->first();
+
+        if (!$coupon) {
+            return response()->json(['message' => 'کوپن نامعتبر است'], 422);
+        }
+
+
+        $cart = auth()->user()->cart;
+        if (!$cart || $cart->items->isEmpty()) {
+            return response()->json(['message' => 'سبد خرید خالی است'], 422);
+        }
+
+        $usedCount = Cart::where('coupon_id', $coupon->id)
+            ->whereNotNull('coupon_applied_at')
+            ->count();
+
+        if ($usedCount >= $coupon->usage_limit) {
+            return response()->json([
+                'message' => 'ظرفیت استفاده از این کد پر شده است.'
+            ]);
+        }
+        $cart->update([
+            'coupon_id' => $coupon->id,
+            'coupon_applied_at' => now(),
+        ]);
+
+        return response()->json([
+            'message' => 'کد تخفیف شما اعمال شد',
+        ]);
+    }
+}

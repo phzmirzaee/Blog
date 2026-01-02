@@ -9,17 +9,15 @@ return new class extends Migration
 
     public function up(): void
     {
-        Schema::table('posts', function (Blueprint $table) {
-            $table->unsignedBigInteger('user_id');
-            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+        Schema::table('coupons', function (Blueprint $table) {
+            $table->string('code')->unique()->change();
         });
     }
 
-
     public function down(): void
     {
-        Schema::table('posts', function (Blueprint $table) {
-
+        Schema::table('coupons', function (Blueprint $table) {
+            $table->dropUnique(['code']);
         });
     }
 };

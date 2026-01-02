@@ -3,23 +3,24 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Admin\Products\StoreProductRequest;
+use App\Http\Requests\Admin\Products\AddProductRequest;
 use App\Http\Requests\Admin\Products\UpdateProductRequest;
+use App\Http\Requests\Admin\AddProductDiscountRequest;
 use App\Models\Product;
-use App\Models\User;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class ProductsController extends Controller
 {
-    public function index(): JsonResponse
+    public function getAllProducts(): JsonResponse
     {
         $products = Product::all();
         return response()->json([
-            "products" => $products
+            'products' => $products,
         ]);
     }
 
-    public function show(int $productId): JsonResponse
+    public function getProduct(int $productId): JsonResponse
     {
         $product = Product::findOrFail($productId);
         return response()->json([
@@ -27,7 +28,7 @@ class ProductsController extends Controller
         ]);
     }
 
-    public function store(StoreProductRequest $request): JsonResponse
+    public function addProduct(AddProductRequest $request): JsonResponse
     {
         $validated = $request->validated();
 
@@ -75,4 +76,23 @@ class ProductsController extends Controller
             "message" => "محصول با موفقیت حذف شد."
         ]);
     }
+
+    public function addProductDiscount(AddProductDiscountRequest $request, int $productId): JsonResponse
+    {
+        $validated = $request->validated();
+        $product = Product::findOrFail($productId);
+        $product->update([
+            'discount_type' => $validated['discount_type'],
+            'is_active_discount' => $validated['is_active_discount'],
+            'discount_value' => $validated['discount_value'],
+            'start_date_discount' => $validated['start_date_discount'],
+            'end_date_discount' => $validated['end_date_discount'],
+        ]);
+        return response()->json([
+            'message' => 'تخفیف محصولات با موفقیت تنظیم شد.',
+        ]);
+
+    }
+
+
 }
