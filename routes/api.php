@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AddressController;
 use App\Http\Controllers\Admin\Discount\CouponsController;
 use App\Http\Controllers\Admin\Discount\GlobalCartDiscountController;
 use App\Http\Controllers\AuthController;
@@ -19,6 +20,7 @@ Route::middleware('jwt.auth')->group(function () {
     Route::post('/cart', [CartController::class, 'addProductToCart'])->name('cart.add');
     Route::delete('/cart/{id}', [CartController::class, 'removeProductFromCart'])->name('cart.remove');
     Route::post('/cart/coupon', [CartController::class, 'applyCoupon'])->name('cart.applyCoupon');
+    Route::post('address', [AddressController::class, 'saveAddress'])->name('address.add');
     Route::prefix('posts')->group(function () {
         Route::post('', [PostController::class, 'store'])->name('posts.store');
         Route::put('{id}', [PostController::class, 'update'])->name('posts.update');
